@@ -1,0 +1,45 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale; // 
+
+public class Main {
+
+    public static void main(String[] args) {
+        String arquivoCSV = "alunos.csv"; // Nome do arquivo CSV de entrada
+
+        List<Aluno> listaDeAlunos = new ArrayList<>(); // Lista para armazenar os objetos Aluno
+
+        // Tentativa de ler o arquivo CSV
+        try (BufferedReader br = new BufferedReader(new FileReader(arquivoCSV))) {
+            String linha;
+            while ((linha = br.readLine()) != null) {
+                // Dividir a linha em campos usando ponto-e-vírgula como separador
+                String[] campos = linha.split(";");
+
+                // Extrair os dados de matrícula, nome e nota
+                String matricula = campos[0].trim();
+                String nome = campos[1].trim();
+                // Converter a nota substituindo vírgula por ponto para compatibilidade com Double.parseDouble
+                double nota = Double.parseDouble(campos[2].trim().replace(",", "."));
+
+                // Criar um objeto Aluno com os dados e adicionar à lista
+                Aluno aluno = new Aluno(matricula, nome, nota);
+                listaDeAlunos.add(aluno);
+            }
+        } catch (IOException e) {
+            System.err.println("Erro ao ler o arquivo " + arquivoCSV + ": " + e.getMessage());
+            return; // Encerra o programa em caso de erro na leitura do arquivo
+        } catch (NumberFormatException e) {
+            System.err.println("Erro de formato ao ler a nota do arquivo " + arquivoCSV + ": " + e.getMessage());
+            return; // Encerra o programa em caso de erro de formato na nota
+        }
+
+        // Exibindo os alunos lidos (apenas para verificação)
+        for (Aluno aluno : listaDeAlunos) {
+            System.out.println(aluno);
+        }
+    }
+}

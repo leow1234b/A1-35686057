@@ -1,0 +1,92 @@
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
+public class Main {
+
+        String arquivoCSV = "alunos.csv"; // Nome do arquivo CSV de entrada
+        String arquivoResumo = "resumo.csv"; // Nome do arquivo CSV de saída
+
+        List<Aluno> listaDeAlunos = new ArrayList<>(); // Lista para armazenar os objetos Aluno
+
+       
+        try (BufferedReader br = new BufferedReader(new FileReader(arquivoCSV))) {
+            String linha;
+            while ((linha = br.readLine()) != null) {
+                // Dividir a linha em campos usando ponto-e-vírgula como separador
+                String[] campos = linha.split(";");
+
+                // Extrair os dados de matrícula, nome e nota
+                String matricula = campos[0].trim();
+                String nome = campos[1].trim();
+                // Converter a nota substituindo vírgula por ponto para compatibilidade com Double.parseDouble
+                double nota = Double.parseDouble(campos[2].trim().replace(",", "."));
+
+                // Criar um objeto Aluno com os dados e adicionar à lista
+                Aluno aluno = new Aluno(matricula, nome, nota);
+                listaDeAlunos.add(aluno);
+            }
+        } catch (IOException e) {
+            System.err.println("Erro ao ler o arquivo " + arquivoCSV + ": " + e.getMessage());
+            return; // Encerra o programa em caso de erro na leitura do arquivo
+        } catch (NumberFormatException e) {
+            System.err.println("Erro de formato ao ler a nota do arquivo " + arquivoCSV + ": " + e.getMessage());
+            return; // Encerra o programa em caso de erro de formato na nota
+        }
+
+       
+        int quantidadeAlunos = listaDeAlunos.size();
+        int aprovados = 0;
+        int reprovados = 0;
+        double menorNota = Double.MAX_VALUE;
+        double maiorNota = Double.MIN_VALUE;
+        double somaNotas = 0.0;
+
+        for (Aluno aluno : listaDeAlunos) {
+            double nota = aluno.getNota();
+            if (nota >= 6.0) {
+                aprovados++;
+            } else {
+                reprovados++;
+            }
+
+            // Atualiza a menor e a maior nota
+            if (nota < menorNota) {
+                menorNota = nota;
+            }
+            if (nota > maiorNota) {
+                maiorNota = nota;
+            }
+
+            // Soma das notas para calcular a média
+            somaNotas += nota;
+        }
+
+        // Calcular média geral
+        double mediaGeral = somaNotas / quantidadeAlunos;
+
+        // Gravar no arquivo resumo.csv
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(arquivoResumo))) {
+            bw.write("Quantidade de alunos: " + quantidadeAlunos);
+            bw.newLine();
+            bw.write("Aprovados: " + aprovados);
+            bw.newLine();
+            bw.write("Reprovados: " + reprovados);
+            bw.newLine();
+            bw.write("Menor nota: " + menorNota);
+            bw.newLine();
+            bw.write("Maior nota: " + maiorNota);
+            bw.newLine();
+            // Formatando a média geral com duas casas decimais
+            bw.write(String.format(Locale.US, "Média geral: %.2f", mediaGeral));
+            bw.newLine();
+
+            System.out.println("Dados gravados com sucesso no arquivo " + arquivoResumo);
+        } catch (IOException e) {
+            System.err.println("Erro ao escrever no arquivo " + arquivoResumo + ": " + e.getMessage());
+        }
+    }
+}
